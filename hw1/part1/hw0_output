@@ -1,0 +1,45 @@
+created by Ahsen Dinc ad38724
+SCC374C/394C: Parallel Computing for Science and Engineering
+Assignment #0 Serial (CPU) code
+
+Summary
+-------
+
+Number of elements in a row/column       ::  16386
+
+Number of inner elements in a row/column ::  16384
+
+Total number of elements                 ::  268500996
+
+Total number of inner elements           ::  268435456
+
+Memory (GB) used per array               ::  1.00024
+
+Threshold                                ::  0.10
+
+Smoothing constants (a, b, c)            ::  0.05 0.10 0.40
+
+Number of elements below threshold (X)   ::  26844103
+
+Fraction of elements below threshold     ::  1.00002e-01 
+
+Number of elements below threshold (Y)   ::  3045
+
+Fraction of elements below threshold     ::  1.13435e-05
+
+
+Action       ::     time/s     Time resolution = 1.0000e-06
+------
+
+CPU: Alloc-X ::     0.0000
+
+CPU: Alloc-Y ::     0.0000
+
+CPU: Init-X  ::     6.7600
+
+CPU: Smooth  ::     1.2659
+
+CPU: Count-X ::     0.5189
+
+CPU: Count-Y ::     0.4982
+
