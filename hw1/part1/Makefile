@@ -1,7 +1,8 @@
 #Makefile
 
 all:
-	icc -lrt -qopenmp main.c -o main
+	icc  -c  timer.c
+	icc -lrt -qopenmp timer.o main.c -o main
 
 run:
 	numactl --cpunodebind=0 --preferred=0 ./main

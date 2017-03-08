@@ -8,6 +8,7 @@ Assignment #0 Serial (CPU) code*/
 #define array(i,j) array[(i) + (j)*n]
 #define x(i,j) x[(i) + (j)*n]
 #define y(i,j) y[(i) + (j)*n]
+double gtod_timer(void);
 
 void initialize(float *array,  int n){
     srand(8);
@@ -21,7 +22,7 @@ void initialize(float *array,  int n){
 //yani y (n-2)*(n-2)lik mi?
 void smooth(float *x, float *y, int n, float a, float b, float c) {
     int i, j;
-#pragma omp for nowait schedule(dynamic) private(j)
+#pragma omp for nowait schedule(static) private(i,j)
    for (i = 1; i < n - 1; i++) {
         for (j = 1; j < n - 1; j++) {
             y(i, j) = (a * (x(i - 1, j - 1) + x(i - 1, j + 1) + x(i + 1, j - 1) + x(i + 1, j + 1))) +
@@ -31,15 +32,14 @@ void smooth(float *x, float *y, int n, float a, float b, float c) {
         }
     }
 }
-
 void count (float *array, int n, float t, int *num){
     *num=0;
     int tmp_num=0;
     int i,j;
 #pragma omp parallel num_threads(16)
 {
-	printf("%d\n", omp_get_thread_num());
-#pragma omp for schedule(dynamic) private(j) reduction(+:tmp_num)
+printf("%d\n", omp_get_thread_num());
+#pragma omp for schedule(dynamic) private(i,j) reduction(+:tmp_num)
     for(i=1; i<n-1; i++){
         for(j=1; j<n-1; j++){
             if (array(i,j) < t){
@@ -56,12 +56,11 @@ int main() {
     float t=0.1;
     float *x, *y;
     int num_x, num_y;
-    int n=16384+2;
+    int n=32768+2;
     //int n=100;//to make the test faster
     float start, stop, t_allocx, t_allocy, t_initx;
     double  t_smooth, t_countx, t_county ;
-	
-
+    double time, t0, t1;
     //struct timespec tp;
     //clockid_t clk_id;
     //clk_id = CLOCK_REALTIME;
@@ -80,32 +79,32 @@ int main() {
     initialize(x,n);
     stop = (float)clock()/CLOCKS_PER_SEC;
     t_initx =stop-start;
+	
+    int nt;
     
-    omp_set_num_threads(10);
-    //start=(float)clock()/CLOCKS_PER_SEC;
-    double start_time = omp_get_wtime();
-    #pragma omp parallel num_threads(16)
-{
-    	printf("%d\n", omp_get_thread_num());
-	smooth(x,y,n,a,b,c);    
-    }
+#ifdef _OPENMP
+#pragma omp parallel private(nt)
+{ nt = omp_get_num_threads(); if(nt<1) printf("NO print, OMP warmup.\n"); }
+#endif
 
-    //stop = (float)clock()/CLOCKS_PER_SEC;
-    //t_smooth =stop-start;
+     double start_time = omp_get_wtime();
+#pragma omp parallel num_threads(16)
+{
+	printf("%d\n", omp_get_thread_num());
+	smooth(x,y,n,a,b,c);    
+}
     t_smooth = omp_get_wtime() - start_time;
 
     //start=(float)clock()/CLOCKS_PER_SEC;
-    start_time = omp_get_wtime();
     //#pragma omp parallel num_threads(16)
    //{
-    	
-	count(x, n, t, &num_x);
-    
-    //}
+//    t0 = gtod_timer();
+    start_time = omp_get_wtime();    
+    count(x, n, t, &num_x);
    t_countx = omp_get_wtime() - start_time;
     //stop = (float)clock()/CLOCKS_PER_SEC;
     //t_countx =stop-start;
-
+//	t_countx = t1-t0;
     //start=(float)clock()/CLOCKS_PER_SEC;
     start_time = omp_get_wtime();
     count(y, n, t, &num_y);
@@ -114,7 +113,7 @@ int main() {
     t_county = omp_get_wtime() - start_time;
 
     FILE* fp;
-    fp = fopen("hw0_output", "w+");
+    fp = fopen("hw1_output", "w+");
     fprintf(fp, "created by Ahsen Dinc ad38724\nSCC374C/394C: Parallel Computing for Science and Engineering\nAssignment #0 Serial (CPU) code\n\n");
     fprintf(fp, "Summary\n");
     fprintf(fp, "-------\n\n");
